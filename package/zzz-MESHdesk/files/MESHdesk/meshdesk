@@ -1,6 +1,6 @@
 config internet 'internet1'
-    option disabled '1'
-    option dns 'cloud.radiusdesk.com'
+    option disabled '0'
+    option dns '8.8.8.8'
     option url 'cake3/rd_cake/nodes/get-config-for-node.json'
     option status_url 'cake3/rd_cake/node-reports/submit_report.json'
     option actions_url 'cake3/rd_cake/node-actions/get_actions_for.json'
@@ -19,7 +19,7 @@ config wifi-client 'wifi_client'
 	option key 'radiusdesk'
 
 config settings 'settings'
-    option hardware 'zbt_we1326'
+    option hardware 'ag300h'
     option id_if 'eth0'
     option lan_up_file '/tmp/lan_up'
     option lan_down_file '/tmp/lan_down'
@@ -169,4 +169,8 @@ config hardware 'ubnt_ac_mesh_pro'
     option internet_led '/sys/class/leds/ubnt:white:dome/brightness'
     option wifi_led 'ubnt:blank'   
 
-
+config hardware 'ag300h'
+	option morse_led '/sys/class/leds/blue:movie_engine/brightness'
+	option internet_led '/sys/class/leds/green:usb/brightness'
+	option wifi_led 'green:band5g'
+	
