@@ -8,22 +8,16 @@ config interface 'loopback'
 config globals 'globals'
 	option ula_prefix 'fde9:bdaf:49a5::/48'
 
-config device
-	option name 'br-lan'
-	option type 'bridge'
-	list ports 'eth0.1'
-	list ports 'eth1'
-	option ipv6 '0'
+config interface 'lan'
+    option ifname 'eth0.1'
+    option type 'bridge'
+    option proto 'dhcp'
 
 config interface 'client_0'
     option proto 'dhcp'
  
 config interface 'client_1'
     option proto 'dhcp'
-
-config interface 'lan'
-	option device 'br-lan'
-	option proto 'dhcp'
 
 config switch
 	option name 'switch0'
