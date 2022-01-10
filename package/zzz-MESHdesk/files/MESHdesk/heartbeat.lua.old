@@ -1,0 +1,107 @@
+#!/usr/bin/lua
+
+-- Include libraries
+package.path = "libs/?.lua;" .. package.path
+
+--[[--
+This script will typically be started during the setup of the device
+If will then loop while checking the following:
+1.) It will run the /etc/MESHdesk/alfred_scripts/alfred_report_to_server.lua
+2.) Sleep
+--]]--a
+
+require "socket" 
+require("rdLogger");
+require('rdConfig');
+require('rdNetwork');
+
+debug 	    = true;
+interval    = 120;
+ping_sleep  = 30;
+local utl   = require "luci.util";
+local l     = rdLogger();
+local c     = rdConfig();
+local network = rdNetwork();
+local nfs   = require "nixio.fs";
+local l_uci = require("luci.model.uci");
+
+--======================================
+---- Some general functions -----------
+--=====================================
+function log(m,p)
+	if(debug)then                                                                                     
+        	l:log(m,p)                                                                                
+	end                               
+end
+                                                                                                       
+function sleep(sec)
+	socket.select(nil, nil, sec)                                                                          
+end  
+
+function up_boot_count()
+    local time_to_sleep = l_uci.cursor():get('meshdesk','settings','heartbeat_interval');
+    local bootcycle     = l_uci.cursor():get("mesh_status", "status", "bootcycle");
+    if(bootcycle)then
+        utl.exec("touch /etc/config/mesh_status");
+        l_uci.cursor():set('mesh_status','status','status');
+        l_uci.cursor():set('mesh_status','status','bootcycle', tonumber(bootcycle)+1);
+    else
+        utl.exec("touch /etc/config/mesh_status");
+        l_uci.cursor():set('mesh_status','status','status');
+        l_uci.cursor():set('mesh_status','status','bootcycle', 1); 
+    end
+    l_uci.cursor():commit('mesh_status');   
+end      
+
+function send_heartbeat()
+    --Check if there are another interval besides the default of 30 seconds
+    local mode = l_uci.cursor():get('meshdesk','settings','mode')
+    if(mode == 'ap')then
+        os.execute("/etc/MESHdesk/alfred_scripts/alfred_ap_report_to_server.lua");
+    else 
+	    os.execute("/etc/MESHdesk/alfred_scripts/alfred_report_to_server.lua");     
+    end
+end
+
+--Thes starts the heartbeat loop--
+function hb_loop()
+    local loop = true;
+    while(loop)do          
+	    log("Reporting mesh status to server")
+	    send_heartbeat(); 
+	    --Check if there are another interval besides the default of 30 seconds
+	    local time_to_sleep = l_uci.cursor():get('meshdesk','settings','heartbeat_interval');
+	    if(time_to_sleep)then
+		    interval = time_to_sleep;
+	    end
+	    sleep(interval);
+    end
+end
+
+function conn_test_loop()
+    local loop  = true;
+    local count = 0;
+    local test_for_ip = l_uci.cursor():get('meshdesk','internet1','ip');
+    
+    local local_ip_v6   = network:getIpV6ForInterface('br-lan');
+	if(local_ip_v6)then
+	    test_for_ip      = l_uci.cursor():get("meshdesk", "internet1", "ip_6");
+	    test_for_ip      = '['..test_for_ip..']';
+	end
+	  
+    while(loop)do
+        count = count + 1;
+        log("Heartbeat startup test for connection try "..count); 
+        if(c:httpTest(test_for_ip))then
+            break;
+        end 
+        sleep(ping_sleep);
+    end
+    --Will only reach here when it could reach the MD server
+    hb_loop();
+end
+
+--=== BEGIN HERE ===---
+up_boot_count();
+conn_test_loop();
+
