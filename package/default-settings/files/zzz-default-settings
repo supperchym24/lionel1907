@@ -37,6 +37,12 @@ sed -i "s/# //g" /etc/opkg/distfeeds.conf
 #uci set network.lan.netmask='255.255.255.0'
 #uci commit network
 
+#firewall
+
+uci set firewall.@zone[1].input='ACCEPT'
+uci set firewall.@zone[1].forward='ACCEPT'
+uci commit firewall
+
 sed -i '/option disabled/d' /etc/config/wireless
 sed -i '/set wireless.radio${devidx}.disabled/d' /lib/wifi/mac80211.sh
 wifi up
