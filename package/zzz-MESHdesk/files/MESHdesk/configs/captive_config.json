@@ -52,7 +52,7 @@
             {
                 "interface": "lan",
                 "options": {
-                    "ifname": "eth0",
+                    "ifname": "eth0.1",
                     "type": "bridge",
                     "proto": "static",
                     "ipaddr": "10.50.50.50",
