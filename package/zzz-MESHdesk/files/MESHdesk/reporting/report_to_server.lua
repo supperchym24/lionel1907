@@ -269,10 +269,10 @@ function afterReport(clear_flag)
         end                            
     end
     if(ok_flag)then
-        internetLED('1'); -- NOTE Here we can swap thme around eg make it 0 to turn off a red LED when the internet is OK
+        internetLED('0'); -- NOTE Here we can swap thme around eg make it 0 to turn off a red LED when the internet is OK
         checkForContollerReboot('1');
     else
-        internetLED('0');
+        internetLED('1');
         checkForContollerReboot('0');    
     end
 end
